@@ -1,0 +1,29 @@
+#!/bin/bash
+
+set -euo pipefail
+
+BUILD_DIR=$1
+CACHE_DIR=$2
+ENV_DIR=$2
+BP_DIR=$(cd $(dirname ${0:-}); cd ..; pwd)
+
+indent() {
+  sed -u 's/^/       /'
+}
+
+echo "-----> Install sassc"
+
+INSTALL_PATH=.sassc/bin
+INSTALL_DIR=$BUILD_DIR/$INSTALL_PATH
+
+mkdir -p $INSTALL_DIR
+cp $BP_DIR/support/sassc $INSTALL_DIR
+chmod +x $INSTALL_DIR/sassc
+
+# symlink into vendor bin so other buildpacks can use
+ln -s $INSTALL_DIR/sassc /tmp/codon/vendor/bin/sassc
+
+mkdir -p $BUILD_DIR/.profile.d
+cat >$BUILD_DIR/.profile.d/sassc.sh <<EOL
+export PATH="\$HOME/${INSTALL_PATH}:\$PATH"
+EOL
